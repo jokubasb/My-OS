@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using OS.Instructions;
+using OS.Machine;
 
 namespace OS
 {
@@ -17,6 +19,9 @@ namespace OS
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+
+            var cpu = new CPU();
+            cpu.PI = 3;
         }
     }
 }
