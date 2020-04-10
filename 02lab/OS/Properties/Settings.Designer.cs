@@ -26,5 +26,10 @@ namespace OS.Properties
                 return defaultInstance;
             }
         }
+
+        public int PageSize { get; internal set; }
+        public int VirtualPagesCount { get; internal set; }
+        public int RealPagesCount { get; internal set; }
+        public int TimerStartValue { get; internal set; }
     }
 }
