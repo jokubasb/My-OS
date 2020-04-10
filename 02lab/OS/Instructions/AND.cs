@@ -14,7 +14,6 @@ namespace OS.Instructions
 
         void Execute(VirtualMachine vm)
         {
-            //vm.PC++;
             andAB(vm);
         }
 

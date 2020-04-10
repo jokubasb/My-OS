@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 
 namespace OS.memory
 {
-    class RealPage : Page
+    public class RealPage : Page
     {
         private void ResetMemory()
         {
             Memory = new ObservableCollection<Word>();
-            Memory = new Word[Settings.Default.PageSize];
             for (int i = 0; i < Settings.Default.PageSize; i++)
             {
                 Memory.Add(new Word());
@@ -31,15 +30,15 @@ namespace OS.memory
         {
             if (!(allocateFor is VirtualPage))
             {
-                //throw new AllocationException("It is possible to allocate real pages to virtual pages only");
+                //throw new AllocationException("");
             }
             if (IsAllocated)
             {
-                //throw new AllocationException("Cannot allocate page that is already allocated");
+                //throw new AllocationException("");
             }
             if (allocateFor == null)
             {
-                throw new NullReferenceException("Can not allocate to Null reference page");
+                throw new NullReferenceException("");
             }
             if (allocateFor.AllocatedToPage != this)
             {
@@ -54,15 +53,15 @@ namespace OS.memory
         {
             if (!(deallocateFrom is VirtualPage))
             {
-                //throw new AllocationException("It is possible to allocate (and deallocate) real pages to virtual pages only");
+                //throw new AllocationException("");
             }
             if (deallocateFrom == null)
             {
-                throw new NullReferenceException("Can not deallocate page from Null reference");
+                throw new NullReferenceException("");
             }
             if (AllocatedToPage != deallocateFrom)
             {
-                //throw new AllocationException("Can not deallocate from page, to whom this page is not allocated");
+                //throw new AllocationException("");
             }
             if (deallocateFrom.AllocatedToPage == this)
             {

@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace OS.Machine
 {
-    class RealMachine
+    public class RealMachine
     {
         private int realMemorySize = Settings.Default.PageSize * Settings.Default.RealPagesCount;
         private RealPage[] memoryPages = new RealPage[Settings.Default.RealPagesCount];
@@ -56,40 +56,21 @@ namespace OS.Machine
             }
             return index;
         }
-
-
-        /// <summary>
-        /// Reads <see cref="Memory.Word"/> from memory at given physical address
-        /// </summary>
-        /// <param name="addr">physical memory address</param>
-        /// <returns>word that was writen in given address</returns>
-        /// <exception cref="IndexOutOfRangeException"> Throws exception if address is out of memory bounds</exception>
         public Word ReadMem(int addr)
         {
             if (addr < 0 || addr > realMemorySize - 1)
             {
-                throw new IndexOutOfRangeException(
-                    "Cannot access memory that is out of bounds, memory range: [0.." + (realMemorySize - 1) + "] " +
-                    "tried to access: " + addr);
+                throw new IndexOutOfRangeException("");
             }
             var pageNr = addr / Settings.Default.PageSize;
             var pageShift = addr % Settings.Default.PageSize;
             return MemoryPages[pageNr][pageShift];
         }
-
-        /// <summary>
-        /// Writes <see cref="Memory.Word"/> into memory at given physical address
-        /// </summary>
-        /// <param name="addr">physical memory address</param>
-        /// <param name="data"><see cref="Memory.Word"/> that needs to be written into given address</param>
-        /// <exception cref="IndexOutOfRangeException"> Throws exception if address is out of memory bounds</exception>
         public void WriteMem(int addr, Word data)
         {
             if (addr < 0 || addr > realMemorySize - 1)
             {
-                throw new IndexOutOfRangeException(
-                    "Cannot access memory that is out of bounds, memory range: [0.." + (realMemorySize - 1) + "] " +
-                    "tried to access: " + addr);
+                throw new IndexOutOfRangeException("");
             }
             var pageNr = addr / Settings.Default.PageSize;
             var pageShift = addr % Settings.Default.PageSize;
@@ -101,7 +82,7 @@ namespace OS.Machine
         {
             if (pageNr < 0 || pageNr > Settings.Default.RealPagesCount - 1)
             {
-                throw new IndexOutOfRangeException("page number (" + pageNr + ") is out of range, page number must be between [0.." + (Settings.Default.RealPagesCount - 1) + "]");
+                throw new IndexOutOfRangeException("");
             }
             MemoryPages[pageNr].Allocate(allocateToPage);
         }
@@ -110,7 +91,7 @@ namespace OS.Machine
         {
             if (pageNr < 0 || pageNr > Settings.Default.RealPagesCount - 1)
             {
-                throw new IndexOutOfRangeException("page number (" + pageNr + ") is out of range, page number must be between [0.." + (Settings.Default.RealPagesCount - 1) + "]");
+                throw new IndexOutOfRangeException("");
             }
             MemoryPages[pageNr].Deallocate(deallocateFromPage);
         }
@@ -118,28 +99,6 @@ namespace OS.Machine
         internal bool IsPageAllocated(int pageNr)
         {
             return MemoryPages[pageNr].IsAllocated;
-        }
-
-
-        public VirtualMachine ForkVirtualMachine(VirtualMachine virtualMachine)
-        {
-            VirtualMachine vm;
-
-            try
-            {
-                vm = new VirtualMachine(virtualMachine);
-                VirtualMachines.Add(vm);
-                return vm;
-            }
-            catch (Exception)
-            {
-                if (virtualMachine != null)
-                {
-                    virtualMachine.ReleaseResources();
-                }
-                throw new InsufficientMemoryException("No more memmory");
-            }
-
         }
 
         public void ExecuteAction(VirtualMachine virtualMachine)
@@ -150,9 +109,9 @@ namespace OS.Machine
             }
             catch (Exception exception)
             {
-                virtualMachine.ReleaseResources();
+                //virtualMachine.ReleaseResources();
                 VirtualMachines.Remove(virtualMachine);
-                MessageBox.Show("Ooops... your program have crased\n" + exception.Message, "Program " + virtualMachine.Name + "(" + virtualMachine.PID + ") have occured error");
+                MessageBox.Show("");
             }
         }
 
@@ -190,7 +149,7 @@ namespace OS.Machine
                     {
                         VirtualMachines[i].ReleaseResources();
                         VirtualMachines.Remove(VirtualMachines[i]);
-                        MessageBox.Show("Ooops... your program have crased\n" + exception.Message, "Program " + VirtualMachines[i].Name + "(" + VirtualMachines[i].PID + ") have occured error");
+                        MessageBox.Show("");
                     }
 
                 }

@@ -12,8 +12,7 @@ namespace OS.memory
     {
         private readonly RealMachine rm;
         private Random random = new Random();
-
-        private VirtualPage[] m_virtualPages = new VirtualPage[Settings.Default.VirtualPagesCount];
+        private VirtualPage[] m_virtualPages;
 
         public VirtualPage[] VirtualPages
         {
@@ -21,16 +20,17 @@ namespace OS.memory
             private set { m_virtualPages = value; }
         }
 
-        public PageTable(RealMachine realMachine)
+        public PageTable(RealMachine realMachine, int PagesCount)
         {
             rm = realMachine;
-            for (int i = 0; i < Settings.Default.VirtualPagesCount; i++)
+            m_virtualPages = new VirtualPage[PagesCount];
+            for (int i = 0; i < PagesCount; i++)
             {
                 VirtualPages[i] = new VirtualPage(i);
             }
         }
 
-        public PageTable(PageTable oldPageTable) : this(oldPageTable.rm)
+        public PageTable(PageTable oldPageTable, int PagesCount) : this(oldPageTable.rm, PagesCount)
         {
             for (int i = 0; i < Settings.Default.VirtualPagesCount; i++)
             {
@@ -91,7 +91,7 @@ namespace OS.memory
             {
                 if (index < 0 || index > Settings.Default.VirtualPagesCount - 1)
                 {
-                    throw new IndexOutOfRangeException("Index must be in range [0.." + (Settings.Default.VirtualPagesCount - 1) + "], current index: " + index);
+                    throw new IndexOutOfRangeException("");
                 }
                 if (!VirtualPages[index].IsAllocated)
                 {

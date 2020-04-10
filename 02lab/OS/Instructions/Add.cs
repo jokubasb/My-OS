@@ -12,15 +12,11 @@ namespace OS.Instructions
         uint a;
         uint b;
         
-        //execute funkcija vdrug kazko dar reikes su add, pvz memory
-        public void Execute(VirtualMachine vm, CPU cpu, PagingDevice pd)
+        public void Execute(VirtualMachine vm)
         {
-            //vm.PC++;
             addAB(vm);
-
         }
 
-        //cia gal reik dar variantu su atmintim?
         public void addAB(VirtualMachine vm)
         {
             a = vm.A;

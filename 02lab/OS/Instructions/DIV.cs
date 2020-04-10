@@ -12,9 +12,8 @@ namespace OS.Instructions
         uint a;
         uint b;
 
-        public void Execute(VirtualMachine vm, CPU cpu, PagingDevice pd)
+        public void Execute(VirtualMachine vm)
         {
-            //vm.PC++;
             divAB(vm);
 
         }

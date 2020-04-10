@@ -20,12 +20,16 @@ namespace OS
             // Application.EnableVisualStyles();
             // Application.SetCompatibleTextRenderingDefault(false);
             // Application.Run(new Form1());
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new Form1());
 
-            var cpu = new CPU();
-            cpu.PI = 3;
+            //var cpu = new CPU();
+            //cpu.PI = 3;
+
+            RealMachine rm = new RealMachine();
+            VirtualMachine vm = new VirtualMachine(/* Real Machine --> */rm, /* Code Segment size --> */4, /* Total pages --> */16);
+            vm.LoadProgramToMemmory("test.txt");
         }
     }
 }

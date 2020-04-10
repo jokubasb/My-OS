@@ -68,9 +68,7 @@
     <Compile Include="Instructions\NOT.cs" />
     <Compile Include="Instructions\OR.cs" />
     <Compile Include="Instructions\XOR.cs" />
-    <Compile Include="Machine\PagingDevice.cs" />
     <Compile Include="Instructions\SUB.cs" />
-    <Compile Include="Machine\CPU.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Machine\VirtualMachine.cs" />

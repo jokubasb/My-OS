@@ -2,13 +2,14 @@
 using OS.memory;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace OS.Machine
 {
-    class VirtualMachine
+    public class VirtualMachine
     {
         public string Name { get; set; }
         public int PTR { get; set; }
@@ -21,7 +22,10 @@ namespace OS.Machine
         public bool ZF { get; set; }
         public bool OF { get; set; }
         public bool IsFinished { get; set; }
-        private enum Segments { DS, PS, SS };
+        public int CS;
+        public int DS;
+        public int SS;
+        public int PagesNumber { get; set; }
 
         private readonly RealMachine rm;
         public PageTable pg { get; private set; }
@@ -32,18 +36,66 @@ namespace OS.Machine
             this.SP = oldVirtualMachine.SP;
             this.IsFinished = oldVirtualMachine.IsFinished;
             this.Name = oldVirtualMachine.Name;
-            this.pg = new PageTable(oldVirtualMachine.pg);
+            this.pg = new PageTable(oldVirtualMachine.pg, oldVirtualMachine.PagesNumber);
             this.rm = oldVirtualMachine.rm;
-
-            this.pg = new PageTable(oldVirtualMachine.pg);
         }
 
-        public VirtualMachine(RealMachine realMachine)
+        public VirtualMachine(RealMachine realMachine, int CodeSize, int MaxPages)
         {
             rm = realMachine;
-            pg = new PageTable(rm);
+            pg = new PageTable(rm, MaxPages);
             PC = 0;
             SP = 0;
+            PagesNumber = MaxPages;
+            CS = 0;
+            DS = CodeSize;
+            SS = ((MaxPages - CodeSize) - (MaxPages - CodeSize) / 2) + CodeSize;
+        }
+
+        public void LoadProgramToMemmory(string file)
+        {
+            string[] lines;
+            bool DataSection = false;
+            bool CodeSection = false;
+            try
+            {
+                lines = File.ReadAllLines(@file);
+            }
+            catch(FileNotFoundException exc)
+            {
+                Console.WriteLine(exc.Message);
+                return;
+            }
+            foreach (string line in lines)
+            {
+                Console.WriteLine(line);
+                if(line.Equals(".data"))
+                {
+                    DataSection = true;
+                    CodeSection = false;
+                }
+                else if (line.Equals(".code"))
+                {
+                    CodeSection = true;
+                    DataSection = false;
+                }
+                else
+                {
+                    if(DataSection)
+                    {
+                        // writing data to Data Segment pointed to by DS
+                    }
+                    else if(CodeSection)
+                    {
+                        // writing code to Code Segment pointed to by CS
+                    }
+                    else
+                    {
+                        Console.WriteLine("bad structure"); // exception in future
+                        return;
+                    }
+                }
+            }
 
         }
 
@@ -53,11 +105,10 @@ namespace OS.Machine
                 return;
 
             PC++;
-            string command = ""; //kazkaip gaunam komanda
+            string command = "";
 
             if (command.StartsWith("ADD"))
             {
-                //kazkaip gaunam reiksmes i registrus a ir b
                 var add = new ADD();
                 add.addAB(this);
                 //add.Execute(this);
@@ -66,7 +117,6 @@ namespace OS.Machine
 
             if (command.StartsWith("SUB"))
             {
-                //kazkaip gaunam reiksmes i registrus a ir b
                 var sub = new SUB();
                 sub.subAB(this);
                 //add.Execute(this);

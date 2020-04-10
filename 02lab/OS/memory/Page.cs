@@ -44,11 +44,11 @@ namespace OS.memory
             {
                 if (!IsMemoryAccesable())
                 {
-                    //throw new AllocationException("Can not acces memory that is not allocated");
+                    //throw new AllocationException("");
                 }
                 if (i < 0 || i > Settings.Default.PageSize)
                 {
-                    //throw new IndexOutOfRangeException("Index must be between [0.." + Settings.Default.PageSize + "], current index: " + i);
+                    //throw new IndexOutOfRangeException("");
                 }
 
                 return Memory[i];
@@ -58,15 +58,15 @@ namespace OS.memory
             {
                 if (!IsMemoryAccesable())
                 {
-                    //throw new AllocationException("Can not set memory value that is unallocated");
+                    //throw new AllocationException("");
                 }
                 if (i < 0 || i > Settings.Default.PageSize)
                 {
-                    //throw new IndexOutOfRangeException("Index must be between [0.." + Settings.Default.PageSize + "], current index: " + i);
+                    //throw new IndexOutOfRangeException("");
                 }
                 if (value == null)
                 {
-                    throw new NullReferenceException("Word can not be null");
+                    throw new NullReferenceException("");
                 }
                 Memory[i] = value;
 
