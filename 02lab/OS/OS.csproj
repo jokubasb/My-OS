@@ -55,12 +55,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="memory\PageTable.cs" />
-    <Compile Include="memory\VirtualPage.cs" />
-    <Compile Include="memory\RealPage.cs" />
-    <Compile Include="memory\Page.cs" />
-    <Compile Include="memory\Word.cs" />
-
+    <Compile Include="Machine\RealMachine.cs" />
+    <Compile Include="Memory\PageTable.cs" />
+    <Compile Include="Memory\VirtualPage.cs" />
+    <Compile Include="Memory\RealPage.cs" />
+    <Compile Include="Memory\Page.cs" />
+    <Compile Include="Memory\Word.cs" />
     <Compile Include="Instructions\ADD.cs" />
     <Compile Include="Instructions\AND.cs" />
     <Compile Include="Instructions\DIV.cs" />

@@ -1,4 +1,5 @@
 ﻿using OS.Instructions;
+using OS.memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,10 @@ namespace OS.Machine
         public bool ZF { get; set; }
         public bool OF { get; set; }
         public bool IsFinished { get; set; }
+        private enum Segments { DS, PS, SS };
+
+        private readonly RealMachine rm;
+        public PageTable pg { get; private set; }
 
         public VirtualMachine(VirtualMachine oldVirtualMachine)
         {
@@ -27,11 +32,16 @@ namespace OS.Machine
             this.SP = oldVirtualMachine.SP;
             this.IsFinished = oldVirtualMachine.IsFinished;
             this.Name = oldVirtualMachine.Name;
-            //this.PagesTable = new PageTable(oldVirtualMachine.PagesTable);
+            this.pg = new PageTable(oldVirtualMachine.pg);
+            this.rm = oldVirtualMachine.rm;
+
+            this.pg = new PageTable(oldVirtualMachine.pg);
         }
 
-        public VirtualMachine()
+        public VirtualMachine(RealMachine realMachine)
         {
+            rm = realMachine;
+            pg = new PageTable(rm);
             PC = 0;
             SP = 0;
 
@@ -64,7 +74,10 @@ namespace OS.Machine
             }
             //TODO kitos komndos
         }
-
+        public void ReleaseResources()
+        {
+            pg.DeallocateAllPages();
+        }
 
     }
 

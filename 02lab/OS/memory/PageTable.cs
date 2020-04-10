@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OS.Machine;
+using OS.Properties;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
