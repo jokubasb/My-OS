@@ -119,14 +119,13 @@ namespace OS.Machine
                 Console.WriteLine(exc.Message);
                 return;
             }
-            PrintPageTable();
-            //TI = Settings.Default.TimerStartValue;  // reset timer
-            //while (true)
-            //{
-            //    checkTrace(trace);
-            //    vm.exec();
-            //    CheckInterrupts(trace);
-            //}
+            TI = Settings.Default.TimerStartValue;  // reset timer
+            while (true)
+            {
+                checkTrace(trace);
+                int addr = vm.exec();   // addr for PD/GD only
+                CheckInterrupts(trace, addr);
+            }
         }
         bool test()
         {
@@ -136,7 +135,7 @@ namespace OS.Machine
             }
             return false;
         }
-        void CheckInterrupts(bool trace)
+        void CheckInterrupts(bool trace, int addr)
         {
             if (test())
             {
@@ -150,41 +149,23 @@ namespace OS.Machine
                 {
                     InterruptQuit(1);
                 }
-                else if (SI == 1) //gd
+                else if (SI == 1) // GD
                 {
-
+                    string data = Console.ReadLine();
+                    WriteMem(addr, new Word(data));
                 }
-                else if (SI == 2) //pd
+                else if (SI == 2) // PD
                 {
-                    int x1 = 0; //TODO is command string
-                    int x2 = 0; //TODO is command string
-                    //using (StreamWriter wr = new StreamWriter("printer.txt"))
-                    //{
-                    //    wr.WriteLine("get real data");
-                    //}
-                    checkTrace(trace);
+                    Word data = ReadMem(addr);
+                    Console.WriteLine(data.ToString());
                 }
                 else if (SI == 3) //halt
-                {
-                    InterruptQuit(0);
-                }
-                else if (SI == 4)
-                {
-
-                }
-                else if (SI == 5)
-                {
-
-                }
-
-                if(PI > 0)
                 {
                     InterruptQuit(0);
                 }
 
                 SI = 0;
                 PI = 0;
-
                 MODE = 0;
             }
         }
@@ -266,7 +247,12 @@ namespace OS.Machine
                 while (true)
                 {
                     Console.WriteLine("Press any key to skip or 'nextcom(1)', 'rmdata(2)', 'vmdata(3)', 'pagetable(4)', 'rmreg(5)', 'vmreg(6)' to trace");
-                    int input = int.Parse(Console.ReadLine());
+                    string line = Console.ReadLine();
+                    int input = -1;
+                    if (line != null)
+                    {
+                        input = int.Parse(Console.ReadLine());
+                    }
                     if (input == 1)
                     {
                         string command = ReadMem(vm.pg.GetPhysicalAddress(vm.PC)).GetString().TrimStart();

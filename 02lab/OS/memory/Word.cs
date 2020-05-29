@@ -20,11 +20,8 @@ namespace OS.memory
             this.word = other.word;
         }
 
-        public Word(UInt32 val)
+        public Word(UInt32 val) : this(val.ToString("X4"))
         {
-            this.word = BitConverter.GetBytes(val);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(this.word);
         }
 
         public Word(string val)

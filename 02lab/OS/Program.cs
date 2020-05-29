@@ -17,19 +17,8 @@ namespace OS
         [STAThread]
         static void Main()
         {
-            // Application.EnableVisualStyles();
-            // Application.SetCompatibleTextRenderingDefault(false);
-            // Application.Run(new Form1());
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
-
-            //var cpu = new CPU();
-            //cpu.PI = 3;
-
             RealMachine rm = new RealMachine();
-            rm.runProgram("test.txt", false);
-
+            rm.runProgram("test.txt", true);
         }
     }
 }

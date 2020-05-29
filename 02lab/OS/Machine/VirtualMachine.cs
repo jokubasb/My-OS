@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -120,32 +121,251 @@ namespace OS.Machine
             }
         }
 
-        public void exec()
+        public int exec()
         {
             if (IsFinished)
-                return;
+            {
+                return 0;
+            }
 
             rm.TI--;    // decrement timer each step
-            string command = rm.ReadMem(pg.GetPhysicalAddress(PC)).GetString().TrimStart();
+            string command = rm.ReadMem(pg.GetPhysicalAddress(PC)).GetString().TrimStart();     // fetch instruction
 
+            // --------------------------------------- ARITHMETIC
             if (command.StartsWith("ADD"))
             {
-                var add = new ADD();
-                add.addAB(this);
-                //add.Execute(this);
-                return;
+                if (A + B > UInt32.MaxValue)
+                {
+                    CF = true;
+                }
+                else CF = false;
+                if ((A + B) % UInt32.MaxValue == 0)
+                {
+                    ZF = true;
+                }
+                else ZF = false;
+                return 0;
             }
 
             if (command.StartsWith("SUB"))
             {
-                var sub = new SUB();
-                sub.subAB(this);
-                //add.Execute(this);
-                return;
+                if (A < B)
+                {
+                    CF = true;
+                }
+                else CF = false;
+                if (A == B)
+                {
+                    ZF = true;
+                }
+                else ZF = false;
+                return 0;
             }
-            //TODO kitos komndos
+
+            if (command.StartsWith("MUL"))
+            {
+                if ((A * B) % UInt32.MaxValue == 0)
+                {
+                    ZF = true;
+                }
+                else ZF = false;
+                return 0;
+            }
+
+            if (command.StartsWith("DIV"))
+            {
+                if (A / B == 0)
+                {
+                    ZF = true;
+                }
+                else ZF = false;
+                return 0;
+            }
+
+            // --------------------------------------- DATA COPY
+            if (command.StartsWith("MA"))
+            {
+                int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                A = rm.ReadMem(addr).GetInt();
+                return 0;
+            }
+
+            if (command.StartsWith("MB"))
+            {
+                int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                B = rm.ReadMem(addr).GetInt();
+                return 0;
+            }
+
+            // --------------------------------------- LOGICAL
+            if (command.StartsWith("AND"))
+            {
+                A = A & B;
+                return 0;
+            }
+
+            if (command.StartsWith("OR"))
+            {
+                A = A | B;
+                return 0;
+            }
+
+            if (command.StartsWith("XOR"))
+            {
+                A = A ^ B;
+                return 0;
+            }
+
+            if (command.StartsWith("NOT"))
+            {
+                A = ~A;
+                return 0;
+            }
+
+            // --------------------------------------- COMPARE
+            if (command.StartsWith("CMP"))
+            {
+                uint res = A - B;
+                if (res > A)
+                {
+                    CF = true;
+                    ZF = false;
+                    OF = true;
+                }
+                else if (res == 0)
+                {
+                    CF = false;
+                    ZF = true;
+                    OF = false;
+                }
+                else
+                {
+                    CF = false;
+                    ZF = false;
+                    OF = false;
+                }
+                return 0;
+            }
+
+            // --------------------------------------- BRANCH
+            if (command.StartsWith("JC"))
+            {
+                if (CF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("NC"))
+            {
+                if (!CF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("JZ"))
+            {
+                if (ZF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("NZ"))
+            {
+                if (!ZF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("JE"))
+            {
+                if (ZF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("JG"))
+            {
+                if (!CF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("JL"))
+            {
+                if (CF)
+                {
+                    int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                    PC = (short)addr;
+                }
+                return 0;
+            }
+
+            if (command.StartsWith("BR"))
+            {
+                int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                PC = (short)addr;
+                return 0;
+            }
+
+            // --------------------------------------- I/O
+            if (command.StartsWith("PD"))
+            {
+                rm.TI -= 2;     // I/O operations take 3 times
+                int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                if (addr >= 0 && addr <= 255)
+                {
+                    rm.SI = 2;
+                }
+                else
+                {
+                    rm.PI = 1;  // wrong addres
+                }
+                return addr;
+            }
+
+            if (command.StartsWith("GD"))
+            {
+                rm.TI -= 2;     // I/O operations take 3 times
+                int addr = Convert.ToInt32(command.Substring(2, 2), 16);
+                if (addr >= 0 && addr <= 255)
+                {
+                    rm.SI = 1;
+                }
+                else
+                {
+                    rm.PI = 1;  // wrong addres
+                }
+                return addr;
+            }
+
+            // --------------------------------------- EXIT
+            if (command.StartsWith("HALT"))
+            {
+                rm.SI = 3;
+                return 0;
+            }
 
             PC++;       // increment program counter each step
+
+            return 0;
         }
         public void ReleaseResources()
         {
