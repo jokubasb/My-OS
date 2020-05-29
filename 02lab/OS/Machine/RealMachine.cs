@@ -157,7 +157,7 @@ namespace OS.Machine
                 else if (SI == 2) // PD
                 {
                     Word data = ReadMem(addr);
-                    Console.WriteLine(data.ToString());
+                    Console.WriteLine(data.GetString());
                 }
                 else if (SI == 3) //halt
                 {

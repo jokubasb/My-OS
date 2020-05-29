@@ -1,5 +1,4 @@
-﻿using OS.Instructions;
-using OS.memory;
+﻿using OS.memory;
 using OS.Properties;
 using System;
 using System.Collections.Generic;
@@ -129,7 +128,7 @@ namespace OS.Machine
             }
 
             rm.TI--;    // decrement timer each step
-            string command = rm.ReadMem(pg.GetPhysicalAddress(PC)).GetString().TrimStart();     // fetch instruction
+            string command = rm.ReadMem(pg.GetPhysicalAddress(PC)).GetString();     // fetch instruction
 
             // --------------------------------------- ARITHMETIC
             if (command.StartsWith("ADD"))

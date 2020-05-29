@@ -60,10 +60,5 @@ namespace OS.memory
             get { return GetByte(i); }
             set { SetByte(i, value); }
         }
-
-        public override string ToString()
-        {
-            return GetString();
-        }
     }
 }
