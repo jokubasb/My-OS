@@ -183,6 +183,7 @@ namespace OS.Machine
             }
             PrintPageTable();
             Console.WriteLine("Exit status: " + status);
+            Environment.Exit(status);
         }
         void PrintRegisters()
         {
