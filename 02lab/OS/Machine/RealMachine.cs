@@ -30,14 +30,24 @@ namespace OS.Machine
         public int DSTI { get; set; }
         public int SRCI { get; set; }
 
-        public RealPage[] MemoryPages { get; set; }
+        public RealPage[] MemoryPages
+        {
+            get
+            {
+                return memoryPages;
+            }
+            set
+            {
+                memoryPages = value;
+            }
+        }
 
         public RealMachine()
         {
             for (int i = 0; i < memoryPages.Length; i++)
             {
                 var realPage = new RealPage(i);
-                memoryPages[i] = realPage;
+                MemoryPages[i] = realPage;
                 pagesIndexes.Add(realPage, i);
             }
         }
@@ -245,7 +255,7 @@ namespace OS.Machine
             for (int i = 0; i < Settings.Default.VirtualPagesCount; i++)
             {
                 int realPageNr = GetPageIndex(vm.pg[i]);
-                Console.WriteLine("virtual page nr: " + i + "real page nr: " + realPageNr);
+                Console.WriteLine("virtual page nr: " + i + " real page nr: " + realPageNr);
                 PrintPageContents(realPageNr);
             }
         }

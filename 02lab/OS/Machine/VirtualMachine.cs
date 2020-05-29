@@ -78,51 +78,35 @@ namespace OS.Machine
                 }
                 else
                 {
-                    // parsing data
                     int lineNo = 1;
+
+                    // parsing data
                     int pos = DS * Settings.Default.PageSize;
                     int end = SS * Settings.Default.PageSize - 1;
-                    bool shouldStop = false;
-                    do
+                    while (!(line = sr.ReadLine()).Equals(Settings.Default.ProgramCodeSectionSymbol))
                     {
-                        line = sr.ReadLine();
                         validateLine(file, line, ref lineNo);
                         if (pos > end)
                         {
                             throw new ParsingException(file, "data section exceeds its limit", lineNo);
                         }
-                        if (!line.Equals(Settings.Default.ProgramCodeSectionSymbol))
-                        {
-                            rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
-                        }
-                        else
-                        {
-                            shouldStop = true;
-                        }
+                        rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
                         pos++;
-                    } while (!shouldStop);
+                    }
 
                     // parsing code
                     pos = 0;
-                    end = DS - 1;
-                    do
+                    end = DS * Settings.Default.PageSize - 1;
+                    while (!(line = sr.ReadLine()).Equals(Settings.Default.ProgramEndSymbol))
                     {
-                        line = sr.ReadLine();
                         validateLine(file, line, ref lineNo);
                         if (pos > end)
                         {
                             throw new ParsingException(file, "code section exceeds its limit", lineNo);
                         }
-                        if (!line.Equals(Settings.Default.ProgramEndSymbol))
-                        {
-                            rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
-                        }
-                        else
-                        {
-                            shouldStop = true;
-                        }
+                        rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
                         pos++;
-                    } while (!shouldStop);
+                    }
                 }
             }
             catch (OutOfMemoryException exc)
@@ -134,7 +118,6 @@ namespace OS.Machine
             {
                 sr.Close();
             }
-
         }
 
         public void exec()
@@ -143,7 +126,7 @@ namespace OS.Machine
                 return;
 
             rm.TI--;    // decrement timer each step
-            string command = "";
+            string command = rm.ReadMem(pg.GetPhysicalAddress(PC)).GetString().TrimStart();
 
             if (command.StartsWith("ADD"))
             {
