@@ -37,7 +37,7 @@ namespace OS.Machine
             for (int i = 0; i < memoryPages.Length; i++)
             {
                 var realPage = new RealPage(i);
-                MemoryPages[i] = realPage;
+                memoryPages[i] = realPage;
                 pagesIndexes.Add(realPage, i);
             }
         }
