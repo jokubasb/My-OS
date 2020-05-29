@@ -28,8 +28,8 @@ namespace OS
             //cpu.PI = 3;
 
             RealMachine rm = new RealMachine();
-            VirtualMachine vm = new VirtualMachine(/* Real Machine --> */rm, /* Code Segment size --> */4, /* Total pages --> */16);
-            vm.LoadProgramToMemmory("test.txt");
+            rm.runProgram("test.txt", false);
+
         }
     }
 }

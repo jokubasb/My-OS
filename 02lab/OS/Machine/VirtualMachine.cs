@@ -1,5 +1,6 @@
 ﻿using OS.Instructions;
 using OS.memory;
+using OS.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,59 +53,96 @@ namespace OS.Machine
             SS = ((MaxPages - CodeSize) - (MaxPages - CodeSize) / 2) + CodeSize;
         }
 
+        private void validateLine(string fileName, string line, ref int lineNo)
+        {
+            lineNo++;
+            if (line == null)
+            {
+                throw new ParsingException(fileName, "unexpected end of file reached", lineNo);
+            }
+            if (line.Length > 4)
+            {
+                throw new ParsingException(fileName, "line exceeds its limit(4)", lineNo);
+            }
+        }
+
         public void LoadProgramToMemmory(string file)
         {
-            string[] lines;
-            bool DataSection = false;
-            bool CodeSection = false;
+            StreamReader sr = new StreamReader(@file);
             try
             {
-                lines = File.ReadAllLines(@file);
-            }
-            catch(FileNotFoundException exc)
-            {
-                Console.WriteLine(exc.Message);
-                return;
-            }
-            foreach (string line in lines)
-            {
-                Console.WriteLine(line);
-                if(line.Equals(".data"))
+                string line = sr.ReadLine();
+                if (line == null || !line.Equals(Settings.Default.ProgramDataSectionSymbol))
                 {
-                    DataSection = true;
-                    CodeSection = false;
-                }
-                else if (line.Equals(".code"))
-                {
-                    CodeSection = true;
-                    DataSection = false;
+                    throw new ParsingException(file, "program must start with '" + Settings.Default.ProgramDataSectionSymbol + "' symbol", 0);
                 }
                 else
                 {
-                    if(DataSection)
+                    // parsing data
+                    int lineNo = 1;
+                    int pos = DS * Settings.Default.PageSize;
+                    int end = SS * Settings.Default.PageSize - 1;
+                    bool shouldStop = false;
+                    do
                     {
-                        // writing data to Data Segment pointed to by DS
-                    }
-                    else if(CodeSection)
+                        line = sr.ReadLine();
+                        validateLine(file, line, ref lineNo);
+                        if (pos > end)
+                        {
+                            throw new ParsingException(file, "data section exceeds its limit", lineNo);
+                        }
+                        if (!line.Equals(Settings.Default.ProgramCodeSectionSymbol))
+                        {
+                            rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
+                        }
+                        else
+                        {
+                            shouldStop = true;
+                        }
+                        pos++;
+                    } while (!shouldStop);
+
+                    // parsing code
+                    pos = 0;
+                    end = DS - 1;
+                    do
                     {
-                        // writing code to Code Segment pointed to by CS
-                    }
-                    else
-                    {
-                        Console.WriteLine("bad structure"); // exception in future
-                        return;
-                    }
+                        line = sr.ReadLine();
+                        validateLine(file, line, ref lineNo);
+                        if (pos > end)
+                        {
+                            throw new ParsingException(file, "code section exceeds its limit", lineNo);
+                        }
+                        if (!line.Equals(Settings.Default.ProgramEndSymbol))
+                        {
+                            rm.WriteMem(pg.GetPhysicalAddress(pos), new Word(line));
+                        }
+                        else
+                        {
+                            shouldStop = true;
+                        }
+                        pos++;
+                    } while (!shouldStop);
                 }
+            }
+            catch (OutOfMemoryException exc)
+            {
+                pg.DeallocateAllPages();
+                throw;
+            }
+            finally
+            {
+                sr.Close();
             }
 
         }
 
-        public void DoInstruction()
+        public void exec()
         {
             if (IsFinished)
                 return;
 
-            PC++;
+            rm.TI--;    // decrement timer each step
             string command = "";
 
             if (command.StartsWith("ADD"))
@@ -123,6 +161,8 @@ namespace OS.Machine
                 return;
             }
             //TODO kitos komndos
+
+            PC++;       // increment program counter each step
         }
         public void ReleaseResources()
         {

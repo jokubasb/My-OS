@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ namespace OS.Machine
         private int realMemorySize = Settings.Default.PageSize * Settings.Default.RealPagesCount;
         private RealPage[] memoryPages = new RealPage[Settings.Default.RealPagesCount];
         private Dictionary<RealPage, int> pagesIndexes = new Dictionary<RealPage, int>();
-        public ObservableCollection<VirtualMachine> VirtualMachines { get; set; }
         private VirtualMachine vm; //initializuojam kai paleidziam programa
 
         public int PI { get; set; }
@@ -30,21 +30,14 @@ namespace OS.Machine
         public int DSTI { get; set; }
         public int SRCI { get; set; }
 
-        public RealPage[] MemoryPages { get; }
-
-        public RealMachine(ObservableCollection<VirtualMachine> virtualMachines)
-            : this()
-        {
-            VirtualMachines = virtualMachines;
-        }
+        public RealPage[] MemoryPages { get; set; }
 
         public RealMachine()
         {
-            VirtualMachines = new ObservableCollection<VirtualMachine>();
             for (int i = 0; i < memoryPages.Length; i++)
             {
                 var realPage = new RealPage(i);
-                memoryPages[i] = realPage;
+                MemoryPages[i] = realPage;
                 pagesIndexes.Add(realPage, i);
             }
         }
@@ -68,6 +61,7 @@ namespace OS.Machine
             var pageShift = addr % Settings.Default.PageSize;
             return MemoryPages[pageNr][pageShift];
         }
+
         public void WriteMem(int addr, Word data)
         {
             if (addr < 0 || addr > realMemorySize - 1)
@@ -103,60 +97,26 @@ namespace OS.Machine
             return MemoryPages[pageNr].IsAllocated;
         }
 
-        public void ExecuteAction(VirtualMachine virtualMachine)
+        public void runProgram(string path, bool trace)
         {
+            vm = new VirtualMachine(this, 4, 16);
             try
             {
-                virtualMachine.DoInstruction();
-                CheckInterrupts(virtualMachine, "", false);
+                vm.LoadProgramToMemmory(path);
             }
-            catch (Exception exception)
+            catch (Exception exc)
             {
-                //virtualMachine.ReleaseResources();
-                VirtualMachines.Remove(virtualMachine);
-                MessageBox.Show("");
+                Console.WriteLine(exc.Message);
+                return;
             }
-        }
-
-        public void FullyRunAllPrograms()
-        {
-            while (VirtualMachines.Any(x => !x.IsFinished))
-            {
-                RunVirtualMachinesUntilTimerInterupt();
-            }
-        }
-
-        public void RunVirtualMachinesUntilTimerInterupt()
-        {
-            for (int i = 0; i < VirtualMachines.Count; i++)
-            {
-                try
-                {
-                    if (VirtualMachines[i].IsFinished)
-                    {
-                        continue;
-                    }
-                    TI = Settings.Default.TimerStartValue;
-                    for (; TI > 0; TI--)
-                    {
-                        if (!VirtualMachines[i].IsFinished)
-                        {
-                            ExecuteAction(VirtualMachines[i]);
-
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    if (i < VirtualMachines.Count)
-                    {
-                        VirtualMachines[i].ReleaseResources();
-                        VirtualMachines.Remove(VirtualMachines[i]);
-                        MessageBox.Show("");
-                    }
-
-                }
-            }
+            PrintPageTable();
+            //TI = Settings.Default.TimerStartValue;  // reset timer
+            //while (true)
+            //{
+            //    checkTrace(trace);
+            //    vm.exec();
+            //    CheckInterrupts(trace);
+            //}
         }
         bool test()
         {
@@ -166,7 +126,7 @@ namespace OS.Machine
             }
             return false;
         }
-        void CheckInterrupts(VirtualMachine vm, string command, bool trace)
+        void CheckInterrupts(bool trace)
         {
             if (test())
             {
@@ -188,10 +148,10 @@ namespace OS.Machine
                 {
                     int x1 = 0; //TODO is command string
                     int x2 = 0; //TODO is command string
-                    using (StreamWriter wr = new StreamWriter("printer.txt"))
-                    {
-                        wr.WriteLine("get real data");
-                    }
+                    //using (StreamWriter wr = new StreamWriter("printer.txt"))
+                    //{
+                    //    wr.WriteLine("get real data");
+                    //}
                     checkTrace(trace);
                 }
                 else if (SI == 3) //halt
@@ -222,10 +182,16 @@ namespace OS.Machine
         {
             PrintRegisters();
             PrintVirtualRegisters();
-            PrintData();
-            PrintVirtualData();
+            for (int i = 0; i < Settings.Default.RealPagesCount; i++)
+            {
+                PrintPageContents(i);
+            }
+            for (int i = 0; i < Settings.Default.VirtualPagesCount; i++)
+            {
+                PrintVirtualPageContents(i);
+            }
             PrintPageTable();
-            Console.WriteLine("Exit statis: " + status);
+            Console.WriteLine("Exit status: " + status);
         }
         void PrintRegisters()
         {
@@ -244,7 +210,6 @@ namespace OS.Machine
         {
             //parasytas global vm
             Console.WriteLine("Virtual machine registers");
-
             Console.WriteLine("PTR = " + vm.PTR.ToString("X"));
             Console.WriteLine("PC = " + vm.PC.ToString("X"));
             Console.WriteLine("SP = " + vm.SP.ToString("X"));
@@ -259,69 +224,67 @@ namespace OS.Machine
             Console.WriteLine("SS = " + vm.SS.ToString("X"));
             Console.WriteLine("IsFinished = " + vm.IsFinished);
         }
-        void PrintData()
+        void PrintPageContents(int pageNr)
         {
-            int pagesCount = Settings.Default.PageSize;
-            int page = 0;
-            foreach(var mp in MemoryPages)
+            if (pageNr < 0 || pageNr > Settings.Default.RealPagesCount - 1)
             {
-                Console.Write(page + " ");
-                for(int i = 0; i < pagesCount; ++i)
-                {
-                    Console.WriteLine("" + mp[i]);
-                }
-                ++page;
+                throw new IndexOutOfRangeException("");
+            }
+            Page p = MemoryPages[pageNr];
+            for (int i = 0; i < Settings.Default.PageSize; i++)
+            {
+                Console.WriteLine(i+ ": " + p[i]);
             }
         }
-        void PrintVirtualData()
+        void PrintVirtualPageContents(int virtualPageNr)
         {
-            int pagesCount = Settings.Default.PageSize;
-            int page = 0;
-            //TODO virtual pages
-            foreach (var mp in vm.MemoryPages)
-            {
-                Console.Write(page + " ");
-                for (int i = 0; i < pagesCount; ++i)
-                {
-                    Console.WriteLine("" + mp[i]);
-                }
-                ++page;
-            }
+            PrintPageContents(GetPageIndex(vm.pg[virtualPageNr]));
         }
         void PrintPageTable()
         {
-            
+            for (int i = 0; i < Settings.Default.VirtualPagesCount; i++)
+            {
+                int realPageNr = GetPageIndex(vm.pg[i]);
+                Console.WriteLine("virtual page nr: " + i + "real page nr: " + realPageNr);
+                PrintPageContents(realPageNr);
+            }
         }
         void checkTrace(bool trace)
         {
-            string waitCommand;
-            if(trace = true)
+            if(trace)
             {
                 while (true)
                 {
-                    Console.WriteLine("Press any symbol and enter to continue  or 'nextcom', 'rmdata', 'vmdata', 'pagetable', 'rmreg', 'vmreg' commands to trace");
-                    waitCommand = Console.ReadLine();
-                    if(waitCommand == "nextcom")
+                    Console.WriteLine("Press any key to skip or 'nextcom(1)', 'rmdata(2)', 'vmdata(3)', 'pagetable(4)', 'rmreg(5)', 'vmreg(6)' to trace");
+                    int input = int.Parse(Console.ReadLine());
+                    if (input == 1)
                     {
-
+                        string command = ReadMem(vm.pg.GetPhysicalAddress(vm.PC)).GetString().TrimStart();
+                        Console.WriteLine("next command is: "+command);
                     }
-                    else if (waitCommand == "rmdata")
+                    else if (input == 2)
                     {
-                        PrintData();
+                        int nr;
+                        Console.WriteLine("Please enter page nr you want to view (0 - "+(Settings.Default.RealPagesCount-1)+")");
+                        nr = int.Parse(Console.ReadLine());
+                        PrintPageContents(nr);
                     }
-                    else if (waitCommand == "vmdata")
+                    else if (input == 3)
                     {
-                        PrintVirtualData();
+                        int nr;
+                        Console.WriteLine("Please enter page nr you want to view (0 - " + (Settings.Default.VirtualPagesCount - 1) + ")");
+                        nr = int.Parse(Console.ReadLine());
+                        PrintVirtualPageContents(nr);
                     }
-                    else if (waitCommand == "pagetable")
+                    else if (input == 4)
                     {
                         PrintPageTable();
                     }
-                    else if (waitCommand == "rmreg")
+                    else if (input == 5)
                     {
                         PrintRegisters();
                     }
-                    else if (waitCommand == "vmreg")
+                    else if (input == 6)
                     {
                         PrintVirtualRegisters(); 
                     }
@@ -329,9 +292,7 @@ namespace OS.Machine
                     {
                         break;
                     }
-
                 }
-                waitCommand = "";
             }
         }
     }

@@ -34,7 +34,11 @@ namespace OS.memory
 
         public string GetString()
         {
-            char[] tmp = { (char)this.word[0], (char)this.word[1], (char)this.word[2], (char)this.word[3] };
+            char[] tmp = new char[this.word.Length];
+            for (int i = 0; i < this.word.Length; i++)
+            {
+                tmp[i] = (char)this.word[i];
+            }
             return new string(tmp);
         }
 

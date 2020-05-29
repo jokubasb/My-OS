@@ -6,14 +6,23 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="PageSize" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">4</Value>
+      <Value Profile="(Default)">16</Value>
     </Setting>
     <Setting Name="TimerStartValue" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">100</Value>
     </Setting>
     <Setting Name="VirtualPagesCount" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">16</Value>
     </Setting>
+	<Setting Name="ProgramCodeSectionSymbol" Type="System.String" Scope="Application">
+		<Value Profile="(Default)">.code</Value>
+	</Setting>
+	<Setting Name="ProgramDataSectionSymbol" Type="System.String" Scope="Application">
+		<Value Profile="(Default)">.data</Value>
+	</Setting>
+	<Setting Name="ProgramEndSymbol" Type="System.String" Scope="Application">
+		<Value Profile="(Default)">HALT</Value>
+	</Setting>
     <Setting Name="Setting" Type="System.String" Scope="Application">
       <Value Profile="(Default)" />
     </Setting>
